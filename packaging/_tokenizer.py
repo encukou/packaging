@@ -25,42 +25,47 @@ class ParseException(Exception):
 
 
 DEFAULT_RULES = {
-    None: r"[ \t]+",  # whitespace: not returned as tokens
-    "LPAREN": r"\(",
-    "RPAREN": r"\)",
-    "LBRACKET": r"\[",
-    "RBRACKET": r"\]",
-    "SEMICOLON": r";",
-    "COMMA": r",",
+    "LPAREN": r"\s*\(",
+    "RPAREN": r"\s*\)",
+    "LBRACKET": r"\s*\[",
+    "RBRACKET": r"\s*\]",
+    "SEMICOLON": r"\s*;",
+    "COMMA": r"\s*,",
     "QUOTED_STRING": re.compile(
         r"""
-            ('[^']*')
-            |
-            ("[^"]*")
+            \s*
+            (
+                ('[^']*')
+                |
+                ("[^"]*")
+            )
         """,
         re.VERBOSE,
     ),
-    "OP": r"===|==|~=|!=|<=|>=|<|>",
-    "VERSION": re.compile(Specifier._version_regex_str, re.VERBOSE | re.IGNORECASE),
-    "BOOLOP": r"or|and",
-    "IN": r"in",
-    "NOT": r"not",
+    "OP": r"\s*(===|==|~=|!=|<=|>=|<|>)",
+    "BOOLOP": r"\s*(or|and)",
+    "IN": r"\s*in",
+    "NOT": r"\s*not",
     "VARIABLE": re.compile(
         r"""
-            python_version
-            |python_full_version
-            |os[._]name
-            |sys[._]platform
-            |platform_(release|system)
-            |platform[._](version|machine|python_implementation)
-            |python_implementation
-            |implementation_(name|version)
-            |extra
+            \s*
+            (
+                python_version
+                |python_full_version
+                |os[._]name
+                |sys[._]platform
+                |platform_(release|system)
+                |platform[._](version|machine|python_implementation)
+                |python_implementation
+                |implementation_(name|version)
+                |extra
+            )
         """,
         re.VERBOSE,
     ),
-    "URL_SPEC": "@ *[^ ]+",
-    "IDENTIFIER": r"([a-zA-Z0-9]|-|_|\.)+",
+    "VERSION": re.compile(Specifier._version_regex_str, re.VERBOSE | re.IGNORECASE),
+    "URL_SPEC": r"\s*@ *[^ ]+",
+    "IDENTIFIER": r"\s*[a-zA-Z0-9._-]+",
 }
 
 
@@ -139,8 +144,7 @@ class Tokenizer:
                 if match:
                     token_text = match[0]
 
-                    if name:
-                        yield self._make_token(name, token_text)
+                    yield self._make_token(name, token_text.strip())
                     self.position += len(token_text)
                     break
             else:
